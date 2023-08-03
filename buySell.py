@@ -8,38 +8,39 @@ import threading
 import time
 
 class IBapi(EWrapper, EClient):
-	def __init__(self):
-		EClient.__init__(self, self)
+    def __init__(self):
+        EClient.__init__(self, self)
 
-	def nextValidId(self, orderId: int):
-		super().nextValidId(orderId)
-		self.nextorderId = orderId
-		print('The next valid order id is: ', self.nextorderId)
+    def nextValidId(self, orderId: int):
+        super().nextValidId(orderId)
+        self.nextorderId = orderId
+        print('The next valid order id is: ', self.nextorderId)
 
-	def orderStatus(self, orderId, status, filled, remaining, avgFullPrice, permId, parentId, lastFillPrice, clientId, whyHeld, mktCapPrice):
-		print('orderStatus - orderid:', orderId, 'status:', status, 'filled', filled, 'remaining', remaining, 'lastFillPrice', lastFillPrice)
-	
-	def openOrder(self, orderId, contract, order, orderState):
-		print('openOrder id:', orderId, contract.symbol, contract.secType, '@', contract.exchange, ':', order.action, order.orderType, order.totalQuantity, orderState.status)
+    def orderStatus(self, orderId, status, filled, remaining, avgFullPrice, permId, parentId, lastFillPrice, clientId, whyHeld, mktCapPrice):
+        print('orderStatus - orderid:', orderId, 'status:', status, 'filled', filled, 'remaining', remaining, 'lastFillPrice', lastFillPrice)
+    
+    def openOrder(self, orderId, contract, order, orderState):
+        print('openOrder id:', orderId, contract.symbol, contract.secType, '@', contract.exchange, ':', order.action, order.orderType, order.totalQuantity, orderState.status)
 
-	def execDetails(self, reqId, contract, execution):
-		print('Order Executed: ', reqId, contract.symbol, contract.secType, contract.currency, execution.execId, execution.orderId, execution.shares, execution.lastLiquidity)
+    def execDetails(self, reqId, contract, execution):
+        print('Order Executed: ', reqId, contract.symbol, contract.secType, contract.currency, execution.execId, execution.orderId, execution.shares, execution.lastLiquidity)
 
 app = IBapi()
 
 def run_loop():
-	app.run()
+    app.run()
 
 #Function to create FX Order contract
 def FX_order(symbol):
-	contract = Contract()
-	contract.symbol = symbol[:3]
-	contract.secType = 'CASH'
-	contract.exchange = 'IDEALPRO'
-	contract.currency = symbol[3:]
-	return contract
+    contract = Contract()
+    contract.symbol = symbol
+    contract.secType = "STK"
+    contract.currency = "USD"
+    contract.exchange = "SMART"
+    contract.primaryExchange = "NASDAQ"
+    return contract
 
-def order( action, stock, totalQuantity, lmtPrice):
+def order( action, stock, totalQuantity, lmtPrice, tif):
     app.connect('127.0.0.1', 7497, 123)
 
     app.nextorderId = None
@@ -63,6 +64,7 @@ def order( action, stock, totalQuantity, lmtPrice):
     order.totalQuantity = totalQuantity
     order.orderType = 'LMT'
     order.lmtPrice = lmtPrice
+    order.tif = tif
 
     #Place order
     app.placeOrder(app.nextorderId, FX_order(stock), order)
