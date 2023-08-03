@@ -2,6 +2,7 @@ from ibapi.client import EClient
 from ibapi.wrapper import EWrapper
 from ibapi.contract import Contract
 from ibapi.order import *
+from flask import Flask, request
 
 import threading
 import time
@@ -70,11 +71,25 @@ def order( action, stock, totalQuantity, lmtPrice):
     time.sleep(3)
     app.disconnect()
 
-def buy(stock, totalQuantity, lmtPrice):
-	order('BUY',stock ,totalQuantity, lmtPrice)
-	
-def sell(stock, totalQuantity, lmtPrice):
-	order('SELL',stock ,totalQuantity, lmtPrice)
-	
-buy('EURUSD', 10,1.1)
-sell('EURUSD', 10,1.1)
+def buy(stock, totalQuantity, lmtPrice, inForce, exchange):
+    order('BUY',stock ,totalQuantity, lmtPrice, inForce)
+    
+def sell(stock, totalQuantity, lmtPrice, inForce, exchange):
+    order('SELL',stock ,totalQuantity, lmtPrice, inForce)
+    
+fApp = Flask(__name__)
+
+@fApp.route('/webhook', methods=['POST'])
+def webhook():
+    if request.method == 'POST':
+        if request.json["buyOrSell"] == "BUY":
+            buy(request.json["symbol"],request.json["quantity"] ,request.json["limit"] ,request.json["inForce"] ,request.json["exchange"]  )
+            return "bought"
+        elif request.json["buyOrSell"] == "SELL":
+            sell(request.json["symbol"],request.json["quantity"] ,request.json["limit"] ,request.json["inForce"] ,request.json["exchange"]  )
+            return "sold"
+    return "invalid request"
+    	
+
+
+fApp.run(host='0.0.0.0',port=80)
