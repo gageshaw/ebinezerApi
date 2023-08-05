@@ -40,7 +40,7 @@ def FX_order(symbol):
     contract.primaryExchange = "NASDAQ"
     return contract
 
-def order( action, stock, totalQuantity, lmtPrice, tif):
+def order( action, stock, quantity, lmtPrice):
     app.connect('127.0.0.1', 7497, 123)
 
     app.nextorderId = None
@@ -61,10 +61,10 @@ def order( action, stock, totalQuantity, lmtPrice, tif):
     #Create order object
     order = Order()
     order.action = action
-    order.totalQuantity = totalQuantity
+    order.totalQuantity = quantity
     order.orderType = 'LMT'
     order.lmtPrice = lmtPrice
-    order.tif = tif
+    order.tif = 'DAY'
 
     #Place order
     app.placeOrder(app.nextorderId, FX_order(stock), order)
@@ -73,25 +73,27 @@ def order( action, stock, totalQuantity, lmtPrice, tif):
     time.sleep(3)
     app.disconnect()
 
-def buy(stock, totalQuantity, lmtPrice, inForce, exchange):
-    order('BUY',stock ,totalQuantity, lmtPrice, inForce)
+
+
+def buy(stock, quantity, lmtPrice):
+   order('BUY',stock ,quantity, lmtPrice)
     
-def sell(stock, totalQuantity, lmtPrice, inForce, exchange):
-    order('SELL',stock ,totalQuantity, lmtPrice, inForce)
+def sell(stock, quantity, lmtPrice):
+   order('SELL',stock ,quantity, lmtPrice)
     
 fApp = Flask(__name__)
 
 @fApp.route('/webhook', methods=['POST'])
 def webhook():
     if request.method == 'POST':
-        if request.json["buyOrSell"] == "BUY":
-            buy(request.json["symbol"],request.json["quantity"] ,request.json["limit"] ,request.json["inForce"] ,request.json["exchange"]  )
-            return "bought"
-        elif request.json["buyOrSell"] == "SELL":
-            sell(request.json["symbol"],request.json["quantity"] ,request.json["limit"] ,request.json["inForce"] ,request.json["exchange"]  )
-            return "sold"
+        if request.json["action"] == "BUY":
+            buy(request.json["symbol"],request.json["quantity"] ,request.json["limit"] )
+            return "bought... probably"
+        elif request.json["action"] == "SELL":
+            sell(request.json["symbol"],request.json["quantity"] ,request.json["limit"] )
+            return "sold... probably"
+        
     return "invalid request"
     	
-
 
 fApp.run(host='0.0.0.0',port=80)
