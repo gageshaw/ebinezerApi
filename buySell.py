@@ -65,6 +65,8 @@ def order( action, stock, quantity, lmtPrice):
     order.orderType = 'LMT'
     order.lmtPrice = lmtPrice
     order.tif = 'DAY'
+    order.eTradeOnly = ''
+    order.firmQuoteOnly = ''
 
     #Place order
     app.placeOrder(app.nextorderId, FX_order(stock), order)
